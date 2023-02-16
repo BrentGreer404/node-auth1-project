@@ -4,7 +4,7 @@ const db = require('../../data/db-config.js')
   resolves to an ARRAY with all users, each user having { user_id, username }
  */
 function find() {
-  return db('users')
+  return db('users').select('user_id', 'username')
 }
 
 /**
@@ -19,7 +19,7 @@ function findBy(filter) {
  */
   function findById(id) {
     return db('users')
-      .where({ id })
+      .where('user_id', id)
       .first()
   }
 

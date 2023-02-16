@@ -1,4 +1,5 @@
 const { nextTick } = require("process");
+const db = require('../../data/db-config')
 
 /*
   If the user does not have a session saved in the server
@@ -8,8 +9,8 @@ const { nextTick } = require("process");
     "message": "You shall not pass!"
   }
 */
-function restricted() {
-
+function restricted(req, res, next) {
+  next()
 }
 
 /*
@@ -20,8 +21,14 @@ function restricted() {
     "message": "Username taken"
   }
 */
-function checkUsernameFree(req, res, next) {
-  next()
+async function checkUsernameFree(req, res, next) {
+  const user = await db('users').where("username", req.body.username).first()
+  if (!user) {
+    next()
+  } else {
+    next({status: 422, message: "Username taken"})
+  }
+  
 }
 
 /*
@@ -45,7 +52,12 @@ function checkUsernameExists(req, res, next) {
   }
 */
 function checkPasswordLength(req, res, next) {
-  next()
+  if (req.body.password && req.body.password.length > 3) {
+    next()
+  } else {
+    next({status:422, message: "Password must be longer than 3 chars"})
+  }
+  
 }
 
 // Don't forget to add these to the `exports` object so they can be required in other modules
