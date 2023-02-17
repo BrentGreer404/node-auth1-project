@@ -10,17 +10,17 @@ const {
 const User = require('../users/users-model')
 
 
-  router.post('/register', checkPasswordLength, checkUsernameFree,  async (req, res, next) => {
-    try {
-      const { username, password } = req.body
-      const hash = bcrypt.hashSync(password, 8)
-      const newUser = { username, password:hash}
-      const result = await User.add(newUser)
-      res.status(200).json(result)    
-    } catch (err) {
-      next(err)
-    }
-  })
+router.post('/register', checkPasswordLength, checkUsernameFree,  async (req, res, next) => {
+  try {
+    const { username, password } = req.body
+    const hash = bcrypt.hashSync(password, 8)
+    const newUser = { username, password:hash}
+    const result = await User.add(newUser)
+    res.status(200).json(result)    
+  } catch (err) {
+    next(err)
+  }
+})
 {
 /**
   1 [POST] /api/auth/register { "username": "sue", "password": "1234" }
@@ -62,10 +62,36 @@ const User = require('../users/users-model')
   }
  */
 
-  router.post('/login',  async (req, res, next) => {
-    next()
-  })
+router.post('/login', checkUsernameExists, async (req, res, next) => {
+  try {
+    const { username, password} = req.body
+    const [user] = await User.findBy({username})
+    if (user && bcrypt.compareSync(password, user.password)) {
+      req.session.user = user
+      next({status:200, message: `Welcome ${username}`})
+    } else {
+      next({status: 401, message: "Invalid credentials"})
+    }
+  } catch(err) {
+    next(err)
+  }
+  
+})
 
+
+router.get('/logout', (req, res, next) => {
+  if (req.session.user) {
+    req.session.destroy(err => {
+      if (err) {
+        next(err)
+      } else {
+        next({status: 200, message: "logged out"})
+      }
+    })
+  } else {
+    next({status: 200, message: "no session"})
+  }
+})
 /**
   3 [GET] /api/auth/logout
 

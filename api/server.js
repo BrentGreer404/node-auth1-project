@@ -25,6 +25,23 @@ server.use(express.json());
 server.use(cors());
 
 // Session here
+server.use(session({
+  name: "chocolatechip",
+  secret: "No nuts",
+  cookie: {
+    maxAge: 1000 * 60 * 60,
+    secure: false,
+    httpOnly: false,
+  },
+  rolling: true,
+  resave: false,
+  saveUninitialized: false,
+  store: new Store({
+    knex: require('../data/db-config.js'),
+  }),
+
+}))
+
 
 server.use('/api/auth', authRouter)
 server.use('/api/users', userRouter)

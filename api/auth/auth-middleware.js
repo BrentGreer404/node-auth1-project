@@ -10,7 +10,11 @@ const db = require('../../data/db-config')
   }
 */
 function restricted(req, res, next) {
-  next()
+  if (req.session.user) {
+    next()
+  } else {
+    next({status:401, message: "You shall not pass!"})
+  }
 }
 
 /*
@@ -39,8 +43,14 @@ async function checkUsernameFree(req, res, next) {
     "message": "Invalid credentials"
   }
 */
-function checkUsernameExists(req, res, next) {
-  next()
+async function checkUsernameExists(req, res, next) {
+  const user = await db('users').where("username", req.body.username).first()
+  if (user) {
+    next()
+  } else {
+    next({status: 401, message: "Invalid credentials"})
+  }
+  
 }
 
 /*
